@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  defense-cop:
+    build: .
+    image: defense-cop:latest
+    container_name: defense_cop_app
+    restart: always
+    network_mode: host # Enables UDP multicast streaming to local network adapters (ATAK)
+    ports:
+      - "8000:8000"
+      - "24910:24910/udp"
+    devices:
+      - "/dev/video0:/dev/video0" # Pass-through the host camera device (0) to the container
+    volumes:
+      - ./telemetry:/app/telemetry # Persist telemetry log logs on the host filesystem
+    environment:
+      - PYTHONUNBUFFERED=1
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu] # Enable GPU pass-through to container for accelerated GPU inference
